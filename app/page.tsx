@@ -1,6 +1,7 @@
 // app/page.tsx
 'use client'
 import { useState } from 'react'
+import { useEffect } from 'react'
 import TaskInput from './components/TaskInput'
 import TaskList from './components/TaskList'
 import { Task } from './types'
@@ -26,6 +27,18 @@ export default function Page() {
   function deleteTask(id: string) {
     setTasks(prev => prev.filter(t => t.id !== id))
   }
+useEffect(() => {
+  const raw = localStorage.getItem('tasks')
+  if (raw) {
+    try {
+      setTasks(JSON.parse(raw))
+    } catch {}
+  }
+}, [])
+
+useEffect(() => {
+  localStorage.setItem('tasks', JSON.stringify(tasks))
+}, [tasks])
 
   return (
     <main className="max-w-2xl mx-auto p-6">

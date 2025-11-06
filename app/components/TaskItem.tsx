@@ -1,7 +1,7 @@
 // app/components/TaskItem.tsx
 'use client'
 import { Task } from '../types'
-import React from 'react'
+import { motion } from 'framer-motion'
 
 type Props = {
   task: Task
@@ -10,26 +10,38 @@ type Props = {
 }
 
 export default function TaskItem({ task, onToggle, onDelete }: Props) {
+  const dateLabel = task.dueDate
+    ? new Date(task.dueDate).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+    : new Date(task.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })
+
   return (
-    <div className="flex items-center justify-between p-3 bg-white rounded-md shadow-sm">
-      <div className="flex items-center gap-3">
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      className="card flex items-center justify-between"
+    >
+      <div className="flex items-center gap-3 w-full">
         <input
           type="checkbox"
           checked={task.completed}
           onChange={() => onToggle(task.id)}
-          className="w-4 h-4"
+          className="w-5 h-5 accent-sky-500"
         />
-        <div className={task.completed ? 'line-through text-slate-400' : ''}>
-          {task.title}
+        <div className="flex-1">
+          <div className={`font-medium ${task.completed ? 'line-through text-slate-400' : 'text-slate-800'}`}>
+            {task.title}
+          </div>
+          <div className="text-xs text-slate-500">{dateLabel}</div>
         </div>
       </div>
       <button
         onClick={() => onDelete(task.id)}
-        aria-label="hapus"
-        className="text-sm text-red-500 hover:text-red-700"
+        className="text-sm text-red-500 hover:text-red-700 ml-3"
       >
-        Hapus
+        ✕
       </button>
-    </div>
+    </motion.div>
   )
 }

@@ -6,3 +6,26 @@
 html, body, #__next {
   height: 100%;
 }
+body {
+  @apply bg-gradient-to-br from-slate-50 to-sky-100;
+}
+
+.card {
+  @apply bg-white rounded-xl shadow-md p-4 transition-all duration-200;
+}
+
+.card:hover {
+  @apply shadow-lg scale-[1.01];
+}
+
+.btn {
+  @apply px-4 py-2 rounded-md font-medium transition-all duration-150;
+}
+
+.btn-primary {
+  @apply bg-sky-500 text-white hover:bg-sky-600 active:bg-sky-700;
+}
+
+.btn-danger {
+  @apply bg-red-500 text-white hover:bg-red-600 active:bg-red-700;
+}

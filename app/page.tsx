@@ -6,28 +6,22 @@ import TaskList from './components/TaskList'
 import FilterBar from './components/FilterBar'
 import { Task } from './types'
 import { v4 as uuidv4 } from 'uuid'
+import { loadTasks, saveTasks } from './lib/storage'
 
 type Filter = 'all' | 'active' | 'completed'
-const STORAGE_KEY = 'todo_tasks_v2'
 
 export default function Page() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [filter, setFilter] = useState<Filter>('all')
   const [query, setQuery] = useState('')
 
-  // load tasks
+  // load tasks sekali saat mount
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY)
-      if (raw) setTasks(JSON.parse(raw))
-    } catch {}
+    const data = loadTasks()
+    setTasks(data)
   }, [])
 
-  // save tasks
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks))
-  }, [tasks])
-
+  // ADD: tambah task dan langsung save
   function addTask(title: string, dueDate: string) {
     const newTask: Task = {
       id: uuidv4(),
@@ -36,20 +30,41 @@ export default function Page() {
       createdAt: new Date().toISOString(),
       dueDate,
     }
-    setTasks(prev => [newTask, ...prev])
+
+    setTasks(prev => {
+      const updated = [newTask, ...prev]
+      saveTasks(updated) // langsung simpan
+      return updated
+    })
   }
 
+  // TOGGLE: toggle completed + langsung save
   function toggleTask(id: string) {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t))
+    setTasks(prev => {
+      const updated = prev.map(t => (t.id === id ? { ...t, completed: !t.completed } : t))
+      saveTasks(updated)
+      return updated
+    })
   }
 
+  // DELETE: hapus + langsung save
   function deleteTask(id: string) {
-    setTasks(prev => prev.filter(t => t.id !== id))
+    setTasks(prev => {
+      const updated = prev.filter(t => t.id !== id)
+      saveTasks(updated)
+      return updated
+    })
+  }
+
+  // Ini berguna kalau ada operasi lain yang mengubah tasks secara global
+  function replaceAllTasks(newList: Task[]) {
+    setTasks(newList)
+    saveTasks(newList)
   }
 
   const visibleTasks = useMemo(() => {
     const q = query.trim().toLowerCase()
-    let arr = tasks
+    let arr = tasks.slice()
     if (filter === 'active') arr = arr.filter(t => !t.completed)
     if (filter === 'completed') arr = arr.filter(t => t.completed)
     if (q) arr = arr.filter(t => t.title.toLowerCase().includes(q))

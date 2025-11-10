@@ -38,4 +38,6 @@ export default function EditTaskPage() {
       <EditForm task={task} onSave={handleSave} />
     </main>
   )
+  
 }
+

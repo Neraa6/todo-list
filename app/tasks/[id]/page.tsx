@@ -28,11 +28,16 @@ export default function TaskDetailPage() {
   return (
     <main className="max-w-lg mx-auto p-6 space-y-3">
       <h1 className="text-2xl font-bold text-sky-700">Detail Tugas</h1>
-      <div className="card">
-        <p className="font-semibold">{task.title}</p>
-        <p className="text-sm text-slate-500">Tanggal: {task.dueDate || 'Tidak ditentukan'}</p>
-        <p className="text-sm">Status: {task.completed ? '✅ Selesai' : '❌ Belum'}</p>
-      </div>
+      <div className="card border border-slate-200 dark:border-slate-700">
+  <p className="font-semibold text-slate-800 dark:text-slate-100">{task.title}</p>
+  <p className="text-sm text-slate-500 dark:text-slate-400">
+    Tanggal: {task.dueDate || 'Tidak ditentukan'}
+  </p>
+  <p className="text-sm text-slate-600 dark:text-slate-300">
+    Status: {task.completed ? '✅ Selesai' : '❌ Belum'}
+  </p>
+</div>
+
       <div className="flex gap-3">
         <button onClick={() => router.back()} className="btn btn-primary">Kembali</button>
         <button onClick={() => router.push(`/tasks/edit/${task.id}`)} className="btn btn-primary bg-green-600 hover:bg-green-700">Edit</button>

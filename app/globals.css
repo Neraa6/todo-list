@@ -2,30 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
-/* custom small styles */
-html, body, #__next {
-  height: 100%;
+/* Transisi lembut saat ganti tema */
+* {
+  transition: background-color 0.25s, color 0.25s, border-color 0.25s;
 }
+
+/* --- Light Mode (default) --- */
 body {
-  @apply bg-gradient-to-br from-slate-50 to-sky-100;
+  @apply bg-slate-50 text-slate-900;
 }
 
+/* --- Dark Mode --- */
+.dark body {
+  @apply bg-[#0f172a] text-slate-100;
+}
+
+/* Card */
 .card {
-  @apply bg-white rounded-xl shadow-md p-4 transition-all duration-200;
+  @apply rounded-xl p-4 bg-white shadow-sm;
+}
+.dark .card {
+  @apply bg-slate-800 shadow-md border border-slate-700;
 }
 
-.card:hover {
-  @apply shadow-lg scale-[1.01];
+/* Input, form, textarea */
+input, select, textarea {
+  @apply bg-white border border-slate-300 text-slate-900 rounded-md;
+}
+.dark input,
+.dark select,
+.dark textarea {
+  @apply bg-slate-800 border-slate-700 text-slate-100;
 }
 
-.btn {
-  @apply px-4 py-2 rounded-md font-medium transition-all duration-150;
-}
-
+/* Tombol utama */
 .btn-primary {
-  @apply bg-sky-500 text-white hover:bg-sky-600 active:bg-sky-700;
+  @apply px-4 py-2 rounded-md font-medium bg-sky-500 text-white hover:bg-sky-600;
+}
+.dark .btn-primary {
+  @apply bg-sky-600 hover:bg-sky-500;
 }
 
-.btn-danger {
-  @apply bg-red-500 text-white hover:bg-red-600 active:bg-red-700;
+/* Tombol umum */
+button {
+  @apply transition-all duration-200;
 }

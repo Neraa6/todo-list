@@ -7,6 +7,8 @@ import FilterBar from './components/FilterBar'
 import { Task } from './types'
 import { v4 as uuidv4 } from 'uuid'
 import { loadTasks, saveTasks } from './lib/storage'
+import ThemeToggle from './components/ThemeToggle'
+
 
 type Filter = 'all' | 'active' | 'completed'
 
@@ -19,6 +21,11 @@ export default function Page() {
   useEffect(() => {
     const data = loadTasks()
     setTasks(data)
+     const today = new Date().toISOString().split('T')[0]
+  const nearDeadline = data.filter(t => t.dueDate === today && !t.completed)
+  if (nearDeadline.length > 0) {
+    alert(`⚠️ Kamu punya ${nearDeadline.length} tugas jatuh tempo hari ini!`)
+  }
   }, [])
 
   // ADD: tambah task dan langsung save
@@ -72,11 +79,17 @@ export default function Page() {
   }, [tasks, filter, query])
 
   return (
-    <main className="max-w-2xl mx-auto p-6 space-y-5">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-sky-700 mb-1">To-Do List Harian Siswa</h1>
-        <p className="text-slate-500 text-sm">Catat tugas, atur prioritas, dan selesaikan dengan semangat ✨</p>
-      </div>
+   <main className="max-w-2xl mx-auto p-6 space-y-5">
+  <div className="flex justify-between items-center">
+    <h1 className="text-3xl font-bold text-sky-700 dark:text-sky-300">
+      To-Do List Harian Siswa
+    </h1>
+    <ThemeToggle />
+  </div>
+  <p className="text-slate-500 dark:text-slate-400 text-sm text-center sm:text-left">
+    Catat tugas, atur prioritas, dan selesaikan dengan semangat ✨
+  </p>
+  ...
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <input

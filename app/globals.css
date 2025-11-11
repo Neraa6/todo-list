@@ -2,16 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-/* smooth transition for theme & small UI changes */
+/* smooth transitions */
 * { transition: background-color .18s, color .18s, border-color .18s, box-shadow .18s; }
 
-/* page bg default */
-:root { --sidebar-bg: #f8fafc; }
-body { @apply bg-white text-slate-900; }
+/* base background */
+body { @apply bg-slate-50 text-slate-900; }
+.dark body { @apply bg-slate-950 text-slate-100; }
 
 /* card */
 .card { @apply bg-white rounded-lg shadow-sm; }
-.dark .card { @apply bg-slate-800 text-slate-100; }
+.dark .card { @apply bg-slate-800; }
 
 /* inputs */
 input, select, textarea {
@@ -23,13 +23,16 @@ input, select, textarea {
 
 /* buttons */
 .btn-primary { @apply inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-600 text-white font-medium; }
-.btn-ghost { @apply inline-flex items-center gap-2 px-3 py-1 rounded-md border border-slate-200 bg-white; }
-.dark .btn-ghost { @apply border-slate-700 bg-slate-800; }
+.btn-ghost { @apply inline-flex items-center gap-2 px-3 py-1 rounded-md border border-slate-200; }
+.dark .btn-ghost { @apply border-slate-700; }
 
-/* small utilities used in components */
-.status-pill { @apply text-xs font-semibold px-3 py-1 rounded-full inline-flex items-center; }
+/* status pill helper */
+.status-pill { @apply inline-flex items-center text-xs font-semibold px-3 py-1 rounded-full; }
 
-/* subtle scrollbar */
-::-webkit-scrollbar { width:8px; }
-::-webkit-scrollbar-thumb { background: rgba(148,163,184,.3); border-radius: 8px; }
+/* scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: rgba(148,163,184,.32); border-radius: 6px; }
 .dark ::-webkit-scrollbar-thumb { background: rgba(100,116,139,.45); }
+
+/* table tweaks */
+.table-row-hover:hover { @apply bg-slate-50 dark:bg-slate-800; }

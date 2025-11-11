@@ -1,61 +1,128 @@
-// components/TaskRow.tsx
 'use client'
 import { Task } from '../types'
-import StatusMenu from './StatusMenu'
+import StatusBadge from './StatusBadge'
 import TimelineBar from './TimelineBar'
-import { useState } from 'react'
+import { FileText, UserCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useState } from 'react'
 
-export default function TaskRow({ t, onToggle, onDelete, onUpdate }: { t: Task, onToggle: (id:string)=>void, onDelete:(id:string)=>void, onUpdate:(task:Task)=>void }) {
-  const [editingTitle, setEditingTitle] = useState(false)
-  const [title, setTitle] = useState(t.title)
+type Props = {
+  task: Task
+  onToggle: (id: string) => void
+  onUpdate: (t: Task) => void
+  onDelete: (id: string) => void
+}
 
-  function saveTitle() {
-    if (title.trim() && title !== t.title) {
-      onUpdate({ ...t, title, updatedAt: new Date().toISOString() })
-    }
-    setEditingTitle(false)
+export default function TaskRow({ task, onToggle, onUpdate, onDelete }: Props) {
+  const [editing, setEditing] = useState<string | null>(null)
+  const [temp, setTemp] = useState<any>({})
+
+  const startEdit = (field: string) => {
+    setEditing(field)
+    setTemp((p: any) => ({ ...p, [field]: (task as any)[field] }))
+  }
+  const save = (field: string) => {
+    if (!editing) return
+    const newVal = temp[field] ?? (task as any)[field]
+    onUpdate({ ...task, [field]: newVal, updatedAt: new Date().toISOString() })
+    setEditing(null)
   }
 
   return (
-    <motion.div layout initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} className="flex items-center gap-4 px-3 py-2 border-b border-slate-100 dark:border-slate-800">
-      <input type="checkbox" checked={t.status === 'done'} onChange={() => onToggle(t.id)} className="w-4 h-4"/>
-      <div className="flex-1">
-        {editingTitle ? (
-          <input value={title} onChange={e => setTitle(e.target.value)} onBlur={saveTitle} onKeyDown={(e)=> e.key==='Enter' && saveTitle()} className="w-full"/>
+    <motion.div layout initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
+      className="grid grid-cols-10 gap-2 px-3 py-2 border-b border-slate-200 dark:border-slate-700 items-center table-row-hover">
+      {/* checkbox */}
+      <div className="flex items-center">
+        <input type="checkbox" checked={task.completed} onChange={() => { onToggle(task.id); }} className="w-4 h-4 accent-sky-600"/>
+      </div>
+
+      {/* task title */}
+      <div className="truncate">
+        {editing === 'title' ? (
+          <input autoFocus value={temp.title ?? task.title} onChange={e => setTemp({ ...temp, title: e.target.value })} onBlur={() => save('title')}
+            className="w-full text-sm px-2 py-1 border rounded-md" />
         ) : (
-          <div className="text-sm font-medium" onDoubleClick={() => setEditingTitle(true)}>{t.title}</div>
+          <div className="text-sm font-medium truncate" onDoubleClick={() => startEdit('title')}>{task.title}</div>
         )}
       </div>
 
-      <div className="w-36 text-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs">U</div>
-        </div>
+      {/* owner */}
+      <div className="flex items-center justify-center">
+        <UserCircle size={20} className="text-slate-500" />
       </div>
 
-      <div className="w-40">
-        <StatusMenu status={t.status} onChange={(s)=> onUpdate({...t, status: s as any, updatedAt: new Date().toISOString()})} />
+      {/* status */}
+      <div className="flex justify-center">
+        <StatusBadge status={task.status} onChange={(s) => onUpdate({ ...task, status: s, updatedAt: new Date().toISOString() })} />
       </div>
 
-      <div className="w-28 text-sm text-slate-600 dark:text-slate-300">{t.dueDate || '-'}</div>
-
-      <div className="w-28">
-        <div className={`px-2 py-1 rounded-md text-xs ${t.priority==='high' ? 'bg-purple-700 text-white' : t.priority==='medium' ? 'bg-purple-400 text-white' : 'bg-blue-300 text-white'}`}>
-          {t.priority || 'Low'}
-        </div>
+      {/* due date */}
+      <div className="text-center">
+        {editing === 'dueDate' ? (
+          <input type="date" value={temp.dueDate ?? task.dueDate ?? ''} onChange={e => setTemp({ ...temp, dueDate: e.target.value })} onBlur={() => save('dueDate')}
+            className="text-xs px-2 py-1 rounded-md border" />
+        ) : (
+          <div className="text-xs text-slate-600 dark:text-slate-400" onDoubleClick={() => startEdit('dueDate')}>{task.dueDate ?? '-'}</div>
+        )}
       </div>
 
-      <div className="w-28 text-sm text-slate-600 dark:text-slate-300">{t.notes || '-'}</div>
+      {/* priority */}
+      <div className="text-center">
+        {editing === 'priority' ? (
+          <select value={temp.priority ?? task.priority ?? 'low'} onChange={e => setTemp({ ...temp, priority: e.target.value })} onBlur={() => save('priority')}
+            className="text-xs rounded-md px-2 py-1">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+        ) : (
+          <div onDoubleClick={() => startEdit('priority')}>
+            <div className={`text-xs font-semibold px-2 py-1 rounded-md inline-block ${
+              task.priority === 'high' ? 'bg-purple-700 text-white' : task.priority === 'medium' ? 'bg-purple-400 text-white' : 'bg-blue-300 text-white'}`}>
+              {task.priority ?? 'Low'}
+            </div>
+          </div>
+        )}
+      </div>
 
-      <div className="w-20 text-sm text-slate-600 dark:text-slate-300">{t.files ? `${t.files} files` : '-'}</div>
+      {/* notes */}
+      <div className="text-center">
+        {editing === 'notes' ? (
+          <input autoFocus value={temp.notes ?? task.notes ?? ''} onChange={e => setTemp({ ...temp, notes: e.target.value })} onBlur={() => save('notes')}
+            className="text-xs px-2 py-1 rounded-md border w-full" />
+        ) : (
+          <div className="text-xs text-slate-600 dark:text-slate-400 truncate" onDoubleClick={() => startEdit('notes')}>{task.notes ?? '-'}</div>
+        )}
+      </div>
 
-      <div className="w-40"><TimelineBar start={t.timeline?.start} end={t.timeline?.end} /></div>
+      {/* files */}
+      <div className="flex items-center justify-center">
+        {editing === 'files' ? (
+          <input type="number" value={temp.files ?? task.files ?? 0} onChange={e => setTemp({ ...temp, files: Number(e.target.value) })} onBlur={() => save('files')}
+            className="w-16 text-xs px-1 py-1 rounded-md border" />
+        ) : (
+          <div className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1" onDoubleClick={() => startEdit('files')}>
+            <FileText size={14} className="text-slate-500" /> {task.files ?? 0}
+          </div>
+        )}
+      </div>
 
-      <div className="w-28 text-sm text-slate-600 dark:text-slate-300">{new Date(t.updatedAt).toLocaleTimeString()}</div>
+      {/* timeline */}
+      <div className="text-center">
+        {editing === 'timeline' ? (
+          <input type="text" value={temp.timeline ?? (task.timeline ? `${task.timeline.start} - ${task.timeline.end}` : '')} onChange={e => setTemp({ ...temp, timeline: e.target.value })} onBlur={() => {
+            // For simplicity save as plain string -> you can parse to object later if needed
+            onUpdate({ ...task, timeline: temp.timeline ?? task.timeline, updatedAt: new Date().toISOString() })
+            setEditing(null)
+          }} className="text-xs px-2 py-1 rounded-md border w-full" />
+        ) : (
+          task.timeline ? <TimelineBar start={task.timeline.start} end={task.timeline.end} /> : <div className="text-xs text-slate-400">-</div>
+        )}
+      </div>
 
-      <div className="w-12">
-        <button onClick={()=> onDelete(t.id)} className="text-red-500">Delete</button>
+      {/* updated */}
+      <div className="text-xs text-center text-slate-500">
+        {new Date(task.updatedAt || task.createdAt).toLocaleTimeString()}
       </div>
     </motion.div>
   )

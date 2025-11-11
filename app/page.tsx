@@ -1,89 +1,83 @@
-// app/page.tsx
 'use client'
 import { useEffect, useMemo, useState } from 'react'
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
-import GroupSection from './components/GroupSection'
+import TaskGroup from './components/TaskGroup'
 import { Task } from './types'
 import { v4 as uuidv4 } from 'uuid'
 import { loadTasks, saveTasks } from './lib/storage'
 
-export default function Page() {
+export default function HomePage() {
   const [tasks, setTasks] = useState<Task[]>([])
 
-  useEffect(() => { setTasks(loadTasks()) }, [])
+  useEffect(() => setTasks(loadTasks()), [])
 
-  // add new task into "To-Do" group
-  function addNewTask() {
-    const n: Task = {
+  const addTask = () => {
+    const now = new Date().toISOString()
+    const t: Task = {
       id: uuidv4(),
       title: 'New task',
+      owner: undefined,
       status: 'working',
       priority: 'low',
-      dueDate: undefined,
       notes: '',
       files: 0,
       timeline: null,
-      owner: undefined,
-      updatedAt: new Date().toISOString()
+      createdAt: now,
+      updatedAt: now,
+      completed: false
     }
-    setTasks(prev => { const upd = [n, ...prev]; saveTasks(upd); return upd })
+    const upd = [t, ...tasks]
+    setTasks(upd); saveTasks(upd)
   }
 
-  function toggleDone(id:string) {
-    setTasks(prev => {
-      const upd = prev.map(t => t.id === id ? { ...t, status: t.status === 'done' ? 'working' : 'done', updatedAt: new Date().toISOString() } : t)
-      saveTasks(upd); return upd
-    })
+  const updateTask = (task: Task) => {
+    const upd = tasks.map(t => t.id === task.id ? task : t)
+    setTasks(upd); saveTasks(upd)
   }
 
-  function deleteTask(id:string) {
-    setTasks(prev => { const upd = prev.filter(t=> t.id !== id); saveTasks(upd); return upd })
+  const toggleTask = (id: string) => {
+    const upd = tasks.map(t => t.id === id ? { ...t, completed: !t.completed, updatedAt: new Date().toISOString() } : t)
+    setTasks(upd); saveTasks(upd)
   }
 
-  function updateTask(task: Task) {
-    setTasks(prev => {
-      const idx = prev.findIndex(p => p.id === task.id)
-      if (idx === -1) return prev
-      const copy = [...prev]; copy[idx] = task; saveTasks(copy); return copy
-    })
+  const deleteTask = (id: string) => {
+    const upd = tasks.filter(t => t.id !== id)
+    setTasks(upd); saveTasks(upd)
   }
 
-  // split to groups
-  const todo = useMemo(()=> tasks.filter(t => t.status !== 'done'), [tasks])
-  const completed = useMemo(()=> tasks.filter(t => t.status === 'done'), [tasks])
+  const todo = useMemo(() => tasks.filter(t => !t.completed), [tasks])
+  const done = useMemo(() => tasks.filter(t => t.completed), [tasks])
 
-  // deadline notification (simple)
+  // deadline notification (once at mount)
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0]
-    const dueToday = tasks.filter(t => t.dueDate === today && t.status !== 'done')
-    if (dueToday.length) {
-      // for now use alert; you can replace with a toast UI lib
-      alert(`⚠️ Kamu punya ${dueToday.length} tugas jatuh tempo hari ini!`)
-    }
-    // run once on mount (only)
+    const dueToday = (tasks || []).filter(t => t.dueDate === today && !t.completed)
+    if (dueToday.length) alert(`⚠️ Kamu punya ${dueToday.length} tugas jatuh tempo hari ini!`)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950">
       <Sidebar />
       <div className="flex-1">
-        <Topbar onNew={addNewTask} />
+        <Topbar onNew={addTask} />
 
         <main className="p-6 max-w-6xl mx-auto">
-          <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
-              <div className="text-sm text-slate-500">Main table</div>
+              <div className="text-sm text-slate-600 dark:text-slate-400">Main table</div>
               <div className="text-sm text-slate-400">Cards</div>
+              <div className="text-sm text-slate-400">+</div>
             </div>
+            <div className="text-sm text-slate-500 dark:text-slate-400"> {/* dummy icons/action */} </div>
           </div>
 
-          <GroupSection title="To-Do" tasks={todo} onToggle={toggleDone} onDelete={deleteTask} onUpdate={updateTask} onAdd={addNewTask} />
-          <GroupSection title="Completed" tasks={completed} onToggle={toggleDone} onDelete={deleteTask} onUpdate={updateTask} onAdd={addNewTask} />
+          <TaskGroup title="To-Do" color="bg-blue-500" tasks={todo} onToggle={toggleTask} onUpdate={updateTask} onDelete={deleteTask} onAdd={addTask} />
+          <TaskGroup title="Completed" color="bg-green-500" tasks={done} onToggle={toggleTask} onUpdate={updateTask} onDelete={deleteTask} onAdd={addTask} />
 
           <div className="mt-6">
-            <button className="px-3 py-2 border border-slate-200 rounded-md" onClick={() => { /* add group - dummy */ }}>+ Add new group</button>
+            <button className="px-3 py-2 border border-slate-200 rounded-md">+ Add new group</button>
           </div>
         </main>
       </div>

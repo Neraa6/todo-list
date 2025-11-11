@@ -2,15 +2,19 @@
 export type Status = 'working' | 'done' | 'stuck'
 export type Priority = 'low' | 'medium' | 'high'
 
+export type Timeline = { start: string; end: string } | null
+
 export type Task = {
   id: string
   title: string
-  owner?: string // can be avatar initials or name
+  owner?: string
   status: Status
-  dueDate?: string // ISO yyyy-mm-dd
+  dueDate?: string // yyyy-mm-dd
   priority?: Priority
   notes?: string
   files?: number
-  timeline?: { start: string; end: string } | null
+  timeline?: Timeline
   updatedAt: string // ISO
+  createdAt: string // ISO
+  completed?: boolean
 }

@@ -1,11 +1,11 @@
-// components/Sidebar.tsx
 'use client'
 import { Home, Grid, MoreHorizontal, Star, Users, LayoutDashboard } from 'lucide-react'
+
 export default function Sidebar() {
   return (
     <aside className="w-64 px-4 py-6 border-r border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
       <div className="mb-6">
-        <h2 className="text-xl font-semibold">App</h2>
+        <h2 className="text-xl font-semibold">Main workspace</h2>
       </div>
 
       <nav className="space-y-2 text-sm">

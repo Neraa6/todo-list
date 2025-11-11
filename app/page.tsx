@@ -1,78 +1,92 @@
 // app/page.tsx
 'use client'
 import { useEffect, useMemo, useState } from 'react'
-import TaskInput from './components/TaskInput'
-import TaskList from './components/TaskList'
-import FilterBar from './components/FilterBar'
-import ThemeToggle from './components/ThemeToggle'
+import Sidebar from './components/Sidebar'
+import Topbar from './components/Topbar'
+import GroupSection from './components/GroupSection'
 import { Task } from './types'
 import { v4 as uuidv4 } from 'uuid'
 import { loadTasks, saveTasks } from './lib/storage'
 
-type Filter = 'all'|'active'|'completed'
-
 export default function Page() {
   const [tasks, setTasks] = useState<Task[]>([])
-  const [query, setQuery] = useState('')
-  const [filter, setFilter] = useState<Filter>('all')
 
   useEffect(() => { setTasks(loadTasks()) }, [])
 
-  function addTask(title: string, dueDate: string) {
-    const n: Task = { id: uuidv4(), title, completed: false, createdAt: new Date().toISOString(), dueDate }
+  // add new task into "To-Do" group
+  function addNewTask() {
+    const n: Task = {
+      id: uuidv4(),
+      title: 'New task',
+      status: 'working',
+      priority: 'low',
+      dueDate: undefined,
+      notes: '',
+      files: 0,
+      timeline: null,
+      owner: undefined,
+      updatedAt: new Date().toISOString()
+    }
     setTasks(prev => { const upd = [n, ...prev]; saveTasks(upd); return upd })
   }
-  function toggleTask(id: string) {
-    setTasks(prev => { const upd = prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t); saveTasks(upd); return upd })
-  }
-  function deleteTask(id: string) {
-    setTasks(prev => { const upd = prev.filter(t => t.id !== id); saveTasks(upd); return upd })
+
+  function toggleDone(id:string) {
+    setTasks(prev => {
+      const upd = prev.map(t => t.id === id ? { ...t, status: t.status === 'done' ? 'working' : 'done', updatedAt: new Date().toISOString() } : t)
+      saveTasks(upd); return upd
+    })
   }
 
-  // deadline notification on load
+  function deleteTask(id:string) {
+    setTasks(prev => { const upd = prev.filter(t=> t.id !== id); saveTasks(upd); return upd })
+  }
+
+  function updateTask(task: Task) {
+    setTasks(prev => {
+      const idx = prev.findIndex(p => p.id === task.id)
+      if (idx === -1) return prev
+      const copy = [...prev]; copy[idx] = task; saveTasks(copy); return copy
+    })
+  }
+
+  // split to groups
+  const todo = useMemo(()=> tasks.filter(t => t.status !== 'done'), [tasks])
+  const completed = useMemo(()=> tasks.filter(t => t.status === 'done'), [tasks])
+
+  // deadline notification (simple)
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0]
-    const dueToday = loadTasks().filter(t => t.dueDate === today && !t.completed)
+    const dueToday = tasks.filter(t => t.dueDate === today && t.status !== 'done')
     if (dueToday.length) {
-      // simple alert — optional: replace with toast lib
+      // for now use alert; you can replace with a toast UI lib
       alert(`⚠️ Kamu punya ${dueToday.length} tugas jatuh tempo hari ini!`)
     }
+    // run once on mount (only)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const visible = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    let arr = tasks.slice()
-    if (filter === 'active') arr = arr.filter(t => !t.completed)
-    if (filter === 'completed') arr = arr.filter(t => t.completed)
-    if (q) arr = arr.filter(t => t.title.toLowerCase().includes(q))
-    return arr
-  }, [tasks, filter, query])
-
   return (
-    <main className="max-w-3xl mx-auto p-6">
-      <div className="flex items-center justify-between gap-4 mb-4">
-        <div>
-          <h1 className="text-3xl font-bold text-sky-600 dark:text-sky-400">To-Do List Harian Siswa</h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">Catat tugas & atur prioritas — buat harimu lebih produktif</p>
-        </div>
-        <ThemeToggle />
-      </div>
+    <div className="min-h-screen flex">
+      <Sidebar />
+      <div className="flex-1">
+        <Topbar onNew={addNewTask} />
 
-      <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4">
-        <input value={query} onChange={e => setQuery(e.target.value)} placeholder="🔍 Cari tugas..." className="flex-1 px-4 py-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100" />
-        <div className="md:ml-3"><FilterBar filter={filter} onChange={setFilter} /></div>
-      </div>
-
-      <TaskInput onAdd={addTask} />
-
-      <div className="mt-4 card">
-        <div className="flex items-center justify-between mb-3">
-          <div className="text-sm text-slate-600 dark:text-slate-400">
-            Total: <span className="font-medium">{tasks.length}</span> • Selesai: <span className="font-medium">{tasks.filter(t => t.completed).length}</span>
+        <main className="p-6 max-w-6xl mx-auto">
+          <div className="mb-6">
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-slate-500">Main table</div>
+              <div className="text-sm text-slate-400">Cards</div>
+            </div>
           </div>
-        </div>
-        <TaskList tasks={visible} onToggle={toggleTask} onDelete={deleteTask} />
+
+          <GroupSection title="To-Do" tasks={todo} onToggle={toggleDone} onDelete={deleteTask} onUpdate={updateTask} onAdd={addNewTask} />
+          <GroupSection title="Completed" tasks={completed} onToggle={toggleDone} onDelete={deleteTask} onUpdate={updateTask} onAdd={addNewTask} />
+
+          <div className="mt-6">
+            <button className="px-3 py-2 border border-slate-200 rounded-md" onClick={() => { /* add group - dummy */ }}>+ Add new group</button>
+          </div>
+        </main>
       </div>
-    </main>
+    </div>
   )
 }

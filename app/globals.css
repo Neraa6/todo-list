@@ -2,48 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Transisi lembut saat ganti tema */
-* {
-  transition: background-color 0.25s, color 0.25s, border-color 0.25s;
-}
+/* smooth transitions */
+* { transition: background-color .18s, color .18s, border-color .18s, box-shadow .18s; }
 
-/* --- Light Mode (default) --- */
-body {
-  @apply bg-slate-50 text-slate-900;
-}
+/* body defaults handled in layout */
 
-/* --- Dark Mode --- */
-.dark body {
-  @apply bg-[#0f172a] text-slate-100;
-}
+/* card */
+.card { @apply rounded-xl p-4 bg-white border border-slate-100 shadow-sm; }
+.dark .card { @apply bg-slate-800 border-slate-700 shadow-md; }
 
-/* Card */
-.card {
-  @apply rounded-xl p-4 bg-white shadow-sm;
-}
-.dark .card {
-  @apply bg-slate-800 shadow-md border border-slate-700;
-}
-
-/* Input, form, textarea */
+/* inputs */
 input, select, textarea {
-  @apply bg-white border border-slate-300 text-slate-900 rounded-md;
+  @apply rounded-md px-3 py-2 border border-slate-300 bg-white text-slate-900;
 }
-.dark input,
-.dark select,
-.dark textarea {
-  @apply bg-slate-800 border-slate-700 text-slate-100;
+.dark input, .dark select, .dark textarea {
+  @apply border-slate-700 bg-slate-900 text-slate-100;
 }
 
-/* Tombol utama */
-.btn-primary {
-  @apply px-4 py-2 rounded-md font-medium bg-sky-500 text-white hover:bg-sky-600;
-}
-.dark .btn-primary {
-  @apply bg-sky-600 hover:bg-sky-500;
-}
+/* buttons */
+.btn-primary { @apply inline-flex items-center justify-center px-4 py-2 rounded-md bg-sky-600 text-white font-medium; }
+.btn-ghost { @apply px-3 py-1 rounded-md bg-transparent border border-slate-200 dark:border-slate-700; }
 
-/* Tombol umum */
-button {
-  @apply transition-all duration-200;
-}
+/* subtle scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background-color: rgba(148,163,184,0.35); border-radius: 6px; }
+.dark ::-webkit-scrollbar-thumb { background-color: rgba(100,116,139,0.45); }

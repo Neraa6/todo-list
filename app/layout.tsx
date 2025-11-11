@@ -5,14 +5,16 @@ import { ThemeProvider } from './context/ThemeContext'
 
 export const metadata = {
   title: 'To-Do List Harian Siswa',
-  description: 'Aplikasi To-Do interaktif dengan Next.js + TypeScript + Tailwind CSS',
+  description: 'To-Do List - Next.js + TS + Tailwind',
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="id" suppressHydrationWarning>
-      <body className="transition-colors duration-300 bg-slate-50 text-slate-900 dark:bg-[#0f172a] dark:text-slate-100 min-h-screen">
-        <ThemeProvider>{children}</ThemeProvider>
+      <body className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300">
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   )

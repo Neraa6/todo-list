@@ -1,15 +1,16 @@
-// app/layout.tsx
-import './globals.css'
-import { ReactNode } from 'react'
+import './styles/globals.css';
+import { TodoProvider } from './context/TodoContext';
+import Navbar from './components/Navbar';
 
-export const metadata = { title: 'todo apps', description: 'Todo apps - table style' }
-
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" suppressHydrationWarning>
-      <body className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100">
-        {children}
+    <html lang="id">
+      <body>
+        <TodoProvider>
+          <Navbar />
+          <main className="p-6">{children}</main>
+        </TodoProvider>
       </body>
     </html>
-  )
+  );
 }

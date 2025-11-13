@@ -1,12 +1,14 @@
-/** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: 'class',
-  content: [
-    "./app/**/*.{ts,tsx,js,jsx}",
-    "./components/**/*.{ts,tsx,js,jsx}"
-  ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        pastelBlue: '#A8DADC',
+        pastelPink: '#FFD6E0',
+        pastelGreen: '#C8FACC',
+        pastelPurple: '#E9D5FF',
+      }
+    }
   },
-  plugins: [],
-}
+  darkMode: 'class',
+  content: ['./app/**/*.{js,ts,jsx,tsx}', './components/**/*.{js,ts,jsx,tsx}'],
+};

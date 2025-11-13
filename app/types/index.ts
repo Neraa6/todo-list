@@ -1,3 +1,4 @@
+// types/index.ts
 export type Status = 'todo' | 'inprogress' | 'done';
 
 export interface Task {
@@ -5,8 +6,8 @@ export interface Task {
   title: string;
   description?: string;
   status: Status;
-  deadline?: string; // ISO
-  assignee?: string;
+  deadline?: string; // ISO date string
+  assignedTo?: string;
   createdAt: string;
 }
 

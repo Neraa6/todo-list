@@ -1,97 +1,104 @@
 // app/board/[id]/page.tsx
 'use client';
+
 import React, { useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTodo } from '../../context/TodoContext';
+import Column from '../../components/BoardView/Column';
 import TaskForm from '../../components/BoardView/TaskForm';
-import TaskCard from '../../components/BoardView/TaskCard';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
+import { Task, Status } from '../../types';
 
 export default function BoardPage() {
   const params = useParams();
+  const router = useRouter();
   const boardId = params.id;
-  const { getBoard, addTask, updateTask, deleteTask } = useTodo();
+  const { getBoard, addTask, updateTask, deleteTask, moveTask } = useTodo();
   const board = getBoard(boardId);
   const [isFormOpen, setFormOpen] = useState(false);
-  const [editing, setEditing] = useState<null | any>(null); // Task | null
+  const [editing, setEditing] = useState<Task | null>(null);
 
   if (!board) return <div>Board not found</div>;
 
-  // optional: grouped by status
-  const grouped = useMemo(() => {
-    return {
-      todo: board.tasks.filter(t => t.status === 'todo'),
-      inprogress: board.tasks.filter(t => t.status === 'inprogress'),
-      done: board.tasks.filter(t => t.status === 'done'),
-    };
-  }, [board.tasks]);
+  const grouped = useMemo(() => ({
+    'todo': board.tasks.filter(t => t.status === 'todo'),
+    'in-progress': board.tasks.filter(t => t.status === 'in-progress'),
+    'done': board.tasks.filter(t => t.status === 'done'),
+  }), [board.tasks]);
 
-  const handleAddClick = () => {
-    setEditing(null);
+  const openNew = (status: Status) => {
+    setEditing({ id: '', title: '', description: '', status, createdAt: new Date().toISOString(), assignedTo: '', deadline: '' });
     setFormOpen(true);
   };
 
-  const handleSaveNew = (payload: any) => {
-    addTask(boardId, payload);
+  const handleSave = (payload: Omit<Task, 'id'|'createdAt'>) => {
+    if (editing && editing.id) {
+      updateTask(boardId, editing.id, payload);
+    } else {
+      addTask(boardId, payload);
+    }
     setFormOpen(false);
+    setEditing(null);
   };
 
-  const handleEdit = (task: any) => {
+  const handleEdit = (task: Task) => {
     setEditing(task);
     setFormOpen(true);
   };
 
-  const handleSaveEdit = (payload: any) => {
-    if (!editing) return;
-    updateTask(boardId, editing.id, payload);
-    setEditing(null);
-    setFormOpen(false);
+  const handleDelete = (taskId: string) => {
+    if (!confirm('Delete task?')) return;
+    deleteTask(boardId, taskId);
   };
 
-  const handleDelete = (taskId: string) => {
-    const ok = confirm('Are you sure you want to delete this task?');
-    if (!ok) return;
-    deleteTask(boardId, taskId);
+  // drag handlers: set dataTransfer taskId
+  const onDragStart = (e: React.DragEvent, taskId: string) => {
+    e.dataTransfer.setData('text/taskId', taskId);
+    // optional: ghost image
+  };
+
+  const onDropTask = (taskId: string, newStatus: Status) => {
+    moveTask(boardId, taskId, newStatus);
   };
 
   return (
     <div className="space-y-6">
-      <header className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">{board.title}</h2>
-          <p className="text-sm text-gray-500">{board.description}</p>
+      <div className="flex items-center justify-between">
+        <motion.div initial={{ x: -12, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex items-center gap-4">
+          <button onClick={() => router.push('/')} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/60 dark:bg-gray-800/60 shadow-sm">
+            <ArrowLeft size={18} /> <span className="hidden sm:inline">Back</span>
+          </button>
+          <div>
+            <h2 className="text-2xl font-bold">{board.title}</h2>
+            <p className="text-sm text-gray-500">{board.description}</p>
+          </div>
+        </motion.div>
+
+        <div className="flex items-center gap-2">
+          <button onClick={() => openNew('todo')} className="px-3 py-1 rounded bg-indigo-500 text-white">Add Task</button>
         </div>
-        <div>
-          <button onClick={handleAddClick} className="px-3 py-1 rounded-md bg-indigo-500 text-white">Add Task</button>
-        </div>
-      </header>
+      </div>
 
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {(['todo','inprogress','done'] as const).map(status=>(
-          <div key={status} className="bg-transparent">
-            <h3 className="font-semibold mb-3">{status === 'todo' ? 'To Do' : status === 'inprogress' ? 'In Progress' : 'Done'}</h3>
-            <div className="space-y-3">
-              <AnimatePresence>
-                {grouped[status].map(task => (
-                  <motion.div key={task.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                    <TaskCard task={task} onEdit={()=>handleEdit(task)} onDelete={handleDelete} />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          </div>
+        {(['todo','in-progress','done'] as Status[]).map(status => (
+          <Column
+            key={status}
+            status={status}
+            tasks={grouped[status]}
+            onAdd={() => openNew(status)}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onDragStart={onDragStart}
+            onDropTask={onDropTask}
+          />
         ))}
       </section>
 
       <AnimatePresence>
         {isFormOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <TaskForm
-              initial={editing ?? undefined}
-              onCancel={() => { setFormOpen(false); setEditing(null); }}
-              onSave={(payload) => editing ? handleSaveEdit(payload) : handleSaveNew(payload)}
-              submitLabel={editing ? 'Update Task' : 'Create Task'}
-            />
+            <TaskForm initial={editing ?? undefined} onCancel={() => { setFormOpen(false); setEditing(null); }} onSave={handleSave} />
           </motion.div>
         )}
       </AnimatePresence>

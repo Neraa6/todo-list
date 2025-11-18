@@ -36,3 +36,4 @@ input, select, textarea {
 
 /* table tweaks */
 .table-row-hover:hover { @apply bg-slate-50 dark:bg-slate-800; }
+html { scroll-behavior: smooth; }

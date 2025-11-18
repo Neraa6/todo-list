@@ -1,29 +1,23 @@
-'use client';
+// app/layout.tsx
 import './styles/globals.css';
-import { TodoProvider } from './context/TodoContext';
+import React from 'react';
 import Navbar from './components/Navbar';
-import { motion, AnimatePresence } from 'framer-motion';
-import { usePathname } from 'next/navigation'; // ⬅️ tambahkan ini
+import { TodoProvider } from './context/TodoContext';
+
+export const metadata = {
+  title: 'TaskFlow',
+  description: 'Monday-like To-Do App',
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname(); // untuk animasi antar halaman
-
   return (
     <html lang="en">
-      <body>
+      <body className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
         <TodoProvider>
           <Navbar />
-          <AnimatePresence mode="wait">
-            <motion.main
-              key={pathname} // ⬅️ isi dengan router pathname
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-            >
-              {children}
-            </motion.main>
-          </AnimatePresence>
+          <main className="pt-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            {children}
+          </main>
         </TodoProvider>
       </body>
     </html>

@@ -16,7 +16,7 @@ export default function BoardCard({ board }: { board: Board }) {
       <h3 className="font-semibold text-lg">{board.title}</h3>
       <p className="text-sm text-gray-500 dark:text-gray-400">{board.description}</p>
       <div className="mt-3">
-        <ProgressBar value={percent} />
+        <ProgressBar tasks={board.tasks ?? []}/>
       </div>
     </Link>
   );

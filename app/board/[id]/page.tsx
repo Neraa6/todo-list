@@ -10,6 +10,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { Task, Status } from '../../types';
 
+// ⬇️ Tambahkan import ProgressBar
+import ProgressBar from '../../components/ProgressBar';
+
 export default function BoardPage() {
   const params = useParams();
   const router = useRouter();
@@ -28,7 +31,15 @@ export default function BoardPage() {
   }), [board.tasks]);
 
   const openNew = (status: Status) => {
-    setEditing({ id: '', title: '', description: '', status, createdAt: new Date().toISOString(), assignedTo: '', deadline: '' });
+    setEditing({
+      id: '',
+      title: '',
+      description: '',
+      status,
+      createdAt: new Date().toISOString(),
+      assignedTo: '',
+      deadline: ''
+    });
     setFormOpen(true);
   };
 
@@ -52,10 +63,8 @@ export default function BoardPage() {
     deleteTask(boardId, taskId);
   };
 
-  // drag handlers: set dataTransfer taskId
   const onDragStart = (e: React.DragEvent, taskId: string) => {
     e.dataTransfer.setData('text/taskId', taskId);
-    // optional: ghost image
   };
 
   const onDropTask = (taskId: string, newStatus: Status) => {
@@ -64,22 +73,39 @@ export default function BoardPage() {
 
   return (
     <div className="space-y-6">
+
+      {/* HEADER */}
       <div className="flex items-center justify-between">
-        <motion.div initial={{ x: -12, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex items-center gap-4">
-          <button onClick={() => router.push('/')} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/60 dark:bg-gray-800/60 shadow-sm">
-            <ArrowLeft size={18} /> <span className="hidden sm:inline">Back</span>
+        <motion.div
+          initial={{ x: -12, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          className="flex items-center gap-4"
+        >
+          <button
+            onClick={() => router.push('/')}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/60 dark:bg-gray-800/60 shadow-sm"
+          >
+            <ArrowLeft size={18} />
+            <span className="hidden sm:inline">Back</span>
           </button>
+
           <div>
             <h2 className="text-2xl font-bold">{board.title}</h2>
             <p className="text-sm text-gray-500">{board.description}</p>
           </div>
         </motion.div>
 
-        <div className="flex items-center gap-2">
-          <button onClick={() => openNew('todo')} className="px-3 py-1 rounded bg-indigo-500 text-white">Add Task</button>
-        </div>
+        <button
+          onClick={() => openNew('todo')}
+          className="px-3 py-1 rounded bg-indigo-500 text-white"
+        >
+          Add Task
+        </button>
       </div>
 
+      <ProgressBar tasks={board.tasks} />
+
+      {/* BOARD COLUMNS */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {(['todo','in-progress','done'] as Status[]).map(status => (
           <Column
@@ -95,13 +121,19 @@ export default function BoardPage() {
         ))}
       </section>
 
+      {/* FORM */}
       <AnimatePresence>
         {isFormOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <TaskForm initial={editing ?? undefined} onCancel={() => { setFormOpen(false); setEditing(null); }} onSave={handleSave} />
+            <TaskForm
+              initial={editing ?? undefined}
+              onCancel={() => { setFormOpen(false); setEditing(null); }}
+              onSave={handleSave}
+            />
           </motion.div>
         )}
       </AnimatePresence>
+
     </div>
   );
 }

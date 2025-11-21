@@ -51,9 +51,9 @@ export const TodoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return newBoard;
   };
 
-  const deleteBoard = (boardId: string) => {
-    setBoards(prev => prev.filter(b => b.id !== boardId));
-  };
+ const deleteBoard = (boardId: string) => {
+  setBoards(prev => prev.filter(b => b.id !== boardId));
+};
 
   const addTask = (boardId: string, payload: Omit<Task, 'id' | 'createdAt'>) => {
     const bIndex = boards.findIndex(b => b.id === boardId);

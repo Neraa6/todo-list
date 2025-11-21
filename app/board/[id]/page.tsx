@@ -19,8 +19,8 @@ import ProgressBar from '../../components/ProgressBar';
 export default function BoardPage() {
   const params = useParams();
   const router = useRouter();
-  const boardId = params.id;
-  const { getBoard, addTask, updateTask, deleteTask, moveTask } = useTodo();
+  const boardId = String(params.id);  
+const { getBoard, addTask, updateTask, deleteTask, moveTask, deleteBoard } = useTodo();
   const board = getBoard(boardId);
   const [isFormOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);

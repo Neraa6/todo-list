@@ -9,6 +9,9 @@ import TaskForm from '../../components/BoardView/TaskForm';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { Task, Status } from '../../types';
+import { Trash2 } from "lucide-react";
+
+
 
 // ⬇️ Tambahkan import ProgressBar
 import ProgressBar from '../../components/ProgressBar';
@@ -95,12 +98,28 @@ export default function BoardPage() {
           </div>
         </motion.div>
 
-        <button
-          onClick={() => openNew('todo')}
-          className="px-3 py-1 rounded bg-indigo-500 text-white"
-        >
-          Add Task
-        </button>
+       <div className="flex items-center gap-2">
+  <button
+    onClick={() => openNew('todo')}
+    className="px-3 py-1 rounded bg-indigo-500 text-white"
+  >
+    Add Task
+  </button>
+
+  {/* Delete Board Button */}
+  <button
+    onClick={() => {
+      if (confirm("Delete this board permanently?")) {
+        deleteBoard(boardId);
+        router.push("/");
+      }
+    }}
+    className="px-3 py-1 rounded bg-red-500 text-white hover:bg-red-600"
+  >
+    <Trash2 size={16} />
+  </button>
+</div>
+
       </div>
 
       <ProgressBar tasks={board.tasks} />

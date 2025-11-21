@@ -9,7 +9,7 @@ export default function ReportsPage(){
   const totalTasks = boards.reduce((acc, b) => acc + b.tasks.length, 0);
   const doneTasks = boards.reduce((acc, b) => acc + b.tasks.filter(t => t.status === 'done').length, 0);
   const todoCount = boards.reduce((acc, b) => acc + b.tasks.filter(t => t.status === 'todo').length, 0);
-  const inProgress = boards.reduce((acc, b) => acc + b.tasks.filter(t => t.status === 'inprogress').length, 0);
+  const inProgress = boards.reduce((acc, b) => acc + b.tasks.filter(t => t.status === 'in-progress').length, 0);
 
   const barData = boards.map(b => ({ name: b.title, tasks: b.tasks.length }));
   const pieData = [

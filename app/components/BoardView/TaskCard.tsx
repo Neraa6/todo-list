@@ -18,7 +18,9 @@ export default function TaskCard({ task, onEdit, onDelete, onDragStart }: Props)
     <motion.article layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
       className="bg-white dark:bg-gray-800 rounded-2xl p-3 shadow-md border"
       draggable
-      onDragStart={(e)=> onDragStart && onDragStart(e, task.id)}
+    onDragStart={(e) => {
+  onDragStart?.(e as unknown as React.DragEvent<HTMLDivElement>, task.id);
+}}
     >
       <div className="flex justify-between">
         <div>

@@ -7,32 +7,54 @@ import { useTodo } from '../../context/TodoContext';
 import Column from '../../components/BoardView/Column';
 import TaskForm from '../../components/BoardView/TaskForm';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Trash2 } from 'lucide-react';
 import { Task, Status } from '../../types';
-import { Trash2 } from "lucide-react";
 
-
-
-// ⬇️ Tambahkan import ProgressBar
+// Progress bar
 import ProgressBar from '../../components/ProgressBar';
 
 export default function BoardPage() {
   const params = useParams();
   const router = useRouter();
-  const boardId = String(params.id);  
-const { getBoard, addTask, updateTask, deleteTask, moveTask, deleteBoard } = useTodo();
+  const boardId = String(params.id);
+
+  const {
+    getBoard,
+    addTask,
+    updateTask,
+    deleteTask,
+    moveTask,
+    deleteBoard
+  } = useTodo();
+
+  // Ambil board (boleh undefined, makanya hooks harus di atas)
   const board = getBoard(boardId);
+
+  // HOOKS HARUS DI SINI (bukan setelah if)
   const [isFormOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
 
-  if (!board) return <div>Board not found</div>;
+  // Grouped harus tetap jalan meski board undefined
+  const grouped = useMemo(() => {
+    const tasks = board?.tasks ?? [];
 
-  const grouped = useMemo(() => ({
-    'todo': board.tasks.filter(t => t.status === 'todo'),
-    'in-progress': board.tasks.filter(t => t.status === 'in-progress'),
-    'done': board.tasks.filter(t => t.status === 'done'),
-  }), [board.tasks]);
+    return {
+      'todo': tasks.filter(t => t.status === 'todo'),
+      'in-progress': tasks.filter(t => t.status === 'in-progress'),
+      'done': tasks.filter(t => t.status === 'done'),
+    };
+  }, [board?.tasks]);
 
+  // Setelah semua HOOK aman, baru boleh return
+  if (!board) {
+    return (
+      <div className="p-6 text-center text-gray-600">
+        Board not found
+      </div>
+    );
+  }
+
+  // OPEN FORM BARU
   const openNew = (status: Status) => {
     setEditing({
       id: '',
@@ -46,6 +68,7 @@ const { getBoard, addTask, updateTask, deleteTask, moveTask, deleteBoard } = use
     setFormOpen(true);
   };
 
+  // SAVE
   const handleSave = (payload: Omit<Task, 'id'|'createdAt'>) => {
     if (editing && editing.id) {
       updateTask(boardId, editing.id, payload);
@@ -56,16 +79,19 @@ const { getBoard, addTask, updateTask, deleteTask, moveTask, deleteBoard } = use
     setEditing(null);
   };
 
+  // EDIT
   const handleEdit = (task: Task) => {
     setEditing(task);
     setFormOpen(true);
   };
 
+  // DELETE TASK
   const handleDelete = (taskId: string) => {
     if (!confirm('Delete task?')) return;
     deleteTask(boardId, taskId);
   };
 
+  // DRAG HANDLER
   const onDragStart = (e: React.DragEvent, taskId: string) => {
     e.dataTransfer.setData('text/taskId', taskId);
   };
@@ -98,33 +124,33 @@ const { getBoard, addTask, updateTask, deleteTask, moveTask, deleteBoard } = use
           </div>
         </motion.div>
 
-       <div className="flex items-center gap-2">
-  <button
-    onClick={() => openNew('todo')}
-    className="px-3 py-1 rounded bg-indigo-500 text-white"
-  >
-    Add Task
-  </button>
+        {/* RIGHT SIDE BUTTONS */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => openNew('todo')}
+            className="px-3 py-1 rounded bg-indigo-500 text-white"
+          >
+            Add Task
+          </button>
 
-  {/* Delete Board Button */}
-  <button
-    onClick={() => {
-      if (confirm("Delete this board permanently?")) {
-        deleteBoard(boardId);
-        router.push("/");
-      }
-    }}
-    className="px-3 py-1 rounded bg-red-500 text-white hover:bg-red-600"
-  >
-    <Trash2 size={16} />
-  </button>
-</div>
-
+          <button
+            onClick={() => {
+              if (confirm("Delete this board permanently?")) {
+                deleteBoard(boardId);
+                router.push("/");
+              }
+            }}
+            className="px-3 py-1 rounded bg-red-500 text-white hover:bg-red-600"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
       </div>
 
+      {/* PROGRESS BAR */}
       <ProgressBar tasks={board.tasks} />
 
-      {/* BOARD COLUMNS */}
+      {/* 3 COLUMNS */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {(['todo','in-progress','done'] as Status[]).map(status => (
           <Column
@@ -140,7 +166,7 @@ const { getBoard, addTask, updateTask, deleteTask, moveTask, deleteBoard } = use
         ))}
       </section>
 
-      {/* FORM */}
+      {/* TASK FORM POPUP */}
       <AnimatePresence>
         {isFormOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
